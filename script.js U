@@ -1,0 +1,91 @@
+(function () {
+  const navToggle = document.querySelector(".nav-toggle");
+  const siteNav = document.querySelector(".site-nav");
+  const themeToggle = document.querySelector(".theme-toggle");
+  const themeLabel = document.querySelector(".theme-label");
+  const themeIcon = document.querySelector(".theme-icon");
+  const yearEl = document.getElementById("year");
+  const navLinks = document.querySelectorAll('.site-nav a[href^="#"]');
+  const sections = document.querySelectorAll("main section[id]");
+  const profileImg = document.querySelector(".profile-photo img");
+  const profileWrap = document.querySelector(".profile-photo");
+
+  if (yearEl) {
+    yearEl.textContent = String(new Date().getFullYear());
+  }
+
+  if (profileImg && profileWrap) {
+    function markPhotoMissing() {
+      profileImg.classList.add("is-missing");
+      profileWrap.classList.add("no-photo");
+    }
+
+    profileImg.addEventListener("error", markPhotoMissing);
+    if (profileImg.complete && profileImg.naturalWidth === 0) {
+      markPhotoMissing();
+    }
+  }
+
+  if (navToggle && siteNav) {
+    navToggle.addEventListener("click", function () {
+      const isOpen = siteNav.classList.toggle("is-open");
+      navToggle.setAttribute("aria-expanded", String(isOpen));
+      navToggle.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+    });
+
+    navLinks.forEach(function (link) {
+      link.addEventListener("click", function () {
+        siteNav.classList.remove("is-open");
+        navToggle.setAttribute("aria-expanded", "false");
+        navToggle.setAttribute("aria-label", "Open menu");
+      });
+    });
+  }
+
+  const storedTheme = localStorage.getItem("theme");
+  const initialTheme = storedTheme || "light";
+  setTheme(initialTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      const nextTheme = document.documentElement.getAttribute("data-theme") === "dark"
+        ? "light"
+        : "dark";
+      setTheme(nextTheme);
+      localStorage.setItem("theme", nextTheme);
+    });
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    const isDark = theme === "dark";
+    if (themeToggle) {
+      themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    }
+    if (themeLabel) {
+      themeLabel.textContent = isDark ? "Light" : "Dark";
+    }
+    if (themeIcon) {
+      themeIcon.textContent = isDark ? "☀️" : "🌙";
+    }
+  }
+
+  function updateActiveNav() {
+    const fromTop = window.scrollY + 90;
+    let currentId = "home";
+
+    sections.forEach(function (section) {
+      if (section.offsetTop <= fromTop) {
+        currentId = section.id;
+      }
+    });
+
+    navLinks.forEach(function (link) {
+      const isActive = link.getAttribute("href") === "#" + currentId;
+      link.classList.toggle("active", isActive);
+    });
+  }
+
+  window.addEventListener("scroll", updateActiveNav, { passive: true });
+  updateActiveNav();
+})();
